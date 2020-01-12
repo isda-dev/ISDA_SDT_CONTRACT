@@ -38,13 +38,10 @@ contract SdtCoin is ERC20Mintable, ERC20Detailed {
     event ReserveChanged(address indexed _address, uint amount);
     event Recalled(address indexed from, uint amount);
 
-    // for debugging
-    event MsgAndValue(string message, bytes32 value);
-
     /**
      * @dev reserved number of tokens per each address
      *
-     * To limit token transaction for some period by the admin or owner,
+     * To limit token transaction for some period by the admin,
      * each address' balance cannot become lower than this amount
      *
      */
@@ -75,26 +72,10 @@ contract SdtCoin is ERC20Mintable, ERC20Detailed {
     }
 
     /**
-       * @dev limit access to admin or vault
-       */
-    modifier onlyAdminOrVault() {
-        require(msg.sender == vault || msg.sender == admin);
-        _;
-    }
-
-    /**
        * @dev limit access to owner or vault
        */
     modifier onlyOwnerOrVault() {
         require(msg.sender == owner || msg.sender == vault);
-        _;
-    }
-
-    /**
-       * @dev limit access to owner or admin
-       */
-    modifier onlyAdminOrOwner() {
-        require(msg.sender == owner || msg.sender == admin);
         _;
     }
 
@@ -156,7 +137,7 @@ contract SdtCoin is ERC20Mintable, ERC20Detailed {
      */
     function transfer(address _to, uint256 _value) public returns (bool) {
         // check the reserve
-        require(balanceOf(msg.sender) - _value >= reserveOf(msg.sender));
+        require(balanceOf(msg.sender).sub(_value) >= reserveOf(msg.sender));
         return super.transfer(_to, _value);
     }
 
@@ -176,10 +157,6 @@ contract SdtCoin is ERC20Mintable, ERC20Detailed {
         vault = _newVault;
         emit VaultChanged(_oldVault, _newVault);
 
-        // vault cannot have any allowed or reserved amount!!!
-        _approve(_newVault, msg.sender,  0);
-        reserves[_newVault] = 0;
-
         // adjust balance
         uint _value = balanceOf(_oldVault);
         _transfer(_oldVault, _newVault, _value);
@@ -193,8 +170,8 @@ contract SdtCoin is ERC20Mintable, ERC20Detailed {
         require(_newOwner != address(0));
         require(_newOwner != owner);
 
-        owner = _newOwner;
         emit OwnerChanged(owner, _newOwner);
+        owner = _newOwner;
     }
 
     /**
@@ -205,9 +182,8 @@ contract SdtCoin is ERC20Mintable, ERC20Detailed {
         require(_newAdmin != address(0));
         require(_newAdmin != admin);
 
-        admin = _newAdmin;
-
         emit AdminChanged(admin, _newAdmin);
+        admin = _newAdmin;
     }
 
     /**
@@ -228,7 +204,7 @@ contract SdtCoin is ERC20Mintable, ERC20Detailed {
         require(currentReserve >= _amount);
         require(currentBalance >= _amount);
 
-        uint newReserve = currentReserve - _amount;
+        uint newReserve = currentReserve.sub(_amount);
         reserves[_from] = newReserve;
         emit ReserveChanged(_from, newReserve);
 
@@ -241,22 +217,24 @@ contract SdtCoin is ERC20Mintable, ERC20Detailed {
      * @dev Transfer tokens from one address to another
      *
      * The _from's SDT balance should be larger than the reserved amount(reserves[_from]) plus _value.
+     *  NOTE: No one can send vault's token using transferFrom
      *
      */
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
+        require(_from != vault);
         require(_value <= balanceOf(_from).sub(reserves[_from]));
         return super.transferFrom(_from, _to, _value);
     }
 
-    function getOwner() public view onlyAdminOrOwnerOrVault returns (address) {
+    function getOwner() public view returns (address) {
         return owner;
     }
 
-    function getVault() public view onlyAdminOrOwnerOrVault returns (address) {
+    function getVault() public view returns (address) {
         return vault;
     }
 
-    function getAdmin() public view onlyAdminOrOwnerOrVault returns (address) {
+    function getAdmin() public view returns (address) {
         return admin;
     }
 
