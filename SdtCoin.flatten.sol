@@ -679,26 +679,22 @@ contract SdtCoin is ERC20Mintable, ERC20Detailed {
     uint noOfTokens = 1000000000; // 1,000,000,000 (1B)
 
     // Address of sdtcoin vault
-    // The vault will have all the sdtcoin issued and the operation
-    // on its token will be protected by multi signing.
-    // In addtion, vault can recall(transfer back) the reserved amount
-    // from some address.
+    // The vault will have all the sdtcoin issued at first.
+    // In addtion, recalled(transfer back) token will be transferred to
+    // the vault.
     address internal vault;
 
     // Address of sdtcoin owner
-    // The owner can change admin and vault address, but the change operation
-    // will be protected by multi signing.
+    // The owner can change admin and vault address.
     address internal owner;
 
     // Address of sdtcoin admin
     // The admin can change reserve. The reserve is the amount of token
     // assigned to some address but not permitted to use.
-    // Once the signers of the admin agree with removing the reserve,
+    // Once the admin agree with removing the reserve,
     // they can change the reserve to zero to permit the user to use all reserved
     // amount. So in effect, reservation will postpone the use of some tokens
-    // being used until all stakeholders agree with giving permission to use that
-    // token to the token owner.
-    // All admin operation will be protected by multi signing.
+    // being used until the admin give permission to the token owner.
     address internal admin;
 
     event OwnerChanged(address indexed previousOwner, address indexed newOwner);
