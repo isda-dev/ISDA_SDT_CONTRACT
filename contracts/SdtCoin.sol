@@ -1,12 +1,11 @@
-pragma solidity >=0.5.0;
-
-import "@openzeppelin/contracts/token/ERC20/ERC20Mintable.sol";
+pragma solidity >=0.5.0; 
 import "@openzeppelin/contracts/token/ERC20/ERC20Detailed.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 /**
  * @title Sdt contract 
  */
-contract SdtCoin is ERC20Mintable, ERC20Detailed {
+contract SdtCoin is ERC20Detailed, ERC20 {
     uint noOfTokens = 1000000000; // 1,000,000,000 (1B)
 
     // Address of sdtcoin vault
@@ -105,8 +104,9 @@ contract SdtCoin is ERC20Mintable, ERC20Detailed {
         admin = _admin;
         vault = _vault;
 
-        // int coins to the vault
-        _mint(vault, noOfTokens * (10 ** uint(decimals())));
+        // initially all coins to the vault
+        uint totalSupply_ = noOfTokens * (10 ** uint(decimals()));
+        _mint(vault, totalSupply_);
     }
 
     /**

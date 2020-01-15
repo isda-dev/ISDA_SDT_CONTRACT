@@ -194,25 +194,4 @@ contract('SdtCoin2', function(accounts) {
       assert.isTrue(exception.message.includes("revert"));
     }
   })
-
-  it("only minter can call mint", async() => {
-      const OnePlayXTimesTenInWei = OneSdtInWei.mul(BIG(10))
-      const OnePlayXTimesTenInWeiStr = OnePlayXTimesTenInWei.toString()
-
-      assert.equal(await balanceOf(user4), "0");
-
-      await coin.mint(user4, OnePlayXTimesTenInWei, {from: minter})
-
-      const totalSupplyAfterMintStr = (await coin.totalSupply()).toString()
-      assert.equal(totalSupplyAfterMintStr, OnePlayXTimesTenInWei.add(NoOfTokensInWei).toString())
-      assert.equal(await balanceOf(user4), OnePlayXTimesTenInWeiStr);
-
-      try {
-          await coin.mint(user4, OnePlayXTimesTenInWei, {from: user4})
-          assert.fail();
-      } catch(exception) {
-          assert.equal(totalSupplyAfterMintStr, OnePlayXTimesTenInWei.add(NoOfTokensInWei).toString())
-          assert.isTrue(exception.message.includes("revert"));
-      }
-  })
 });
